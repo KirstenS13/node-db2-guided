@@ -1,0 +1,153 @@
+DATABASE SCHEMA DESIGN - 8/20/20
+
+DBMS (Database Management System)
+    -- Software engine and SQL dialect used to store and access our data
+    -- Come in:
+        -- Relational
+            -- ex) SQLite, PostgreSQL, MySQL, Oracle
+        -- Non-Relational
+            -- ex) MongoDB, DynamoDB, Cassandra, Redis
+
+    -- Each DBMS has different pros and cons
+    -- Which to use depends on what you're doing
+        -- SQLite is great for learning SQL
+            -- It's easy to set up and debug
+            -- Not as many features as other DBMSs
+        -- PostgreSQL and MySQL are great for production
+            -- It has more features and functionality
+            -- Harder to set up and debug
+
+Tonight we are learning how to create the Database
+    -- columns, data types, tables, etc
+
+Database schema should be clean and organized
+
+Designing a Database schema
+    -- what fields, or columns, does a table need?
+    -- what should the identifying column (or primary key) be?
+    -- what type of data do we expect for each column?
+    -- are there any restrictions needed for each column?
+
+Identifying (usu ID) (Primary Key) column is always required
+    -- as long as each entry in that column is unique, it can be the identifier
+
+Data Types:
+    -- can restrict what type of data can be stored in the column
+    -- it enforces what type of data is in there
+    -- This helps the table stay organized and clean
+
+    -- float: number with decimals
+    -- integer: whole numbers
+
+    -- available data types depend on the DBMS
+    
+    -- SQLite: Available Data Types
+        -- 5 Storage Types:
+            -- Integer
+            -- Real
+            -- Text
+            -- Blob
+            -- Numeric
+        -- each storage type has various data types available
+
+    -- Side Note: in JS, money is stored in cents
+        -- 1 dollar would be 100
+        -- $502.83 would be 50283
+        -- This is because JS handles whole numbers better than decimals
+
+Constraints determine what is allowed in the column
+    -- learn more about them in the docs
+
+IS_NULLABLE: (constraint)
+    --- "NO" means entry (row) cannot be added if there is no value for that column (required)
+        -- will not add if the value is null
+    -- "YES" means entry can be added even if there is no value for that column
+
+COLUMN_DEFAULT: (constraint)
+    -- sets a default value for the column in case no value is supplied
+
+DDL:
+    -- 3 Main Commands:
+        -- CREATE TABLE <table> (
+            <column> <type> <constraints>,
+            <column> <type> <constraints>
+        );
+            -- EXAMPLE: 
+                CREATE TABLE IF NOT EXISTS "fruits" (
+                    "id" INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,
+                    "name" TEXT NOT NULL UNIQUE,
+                    "avgWeightOz" FLOAT NOT NULL,
+                    "delicious" BOOLEAN DEFAULT true,
+                    "color" TEXT
+                );
+
+        -- ALTER TABLE <table>
+        <changes>;
+
+            -- EXAMPLE:
+                ALTER TABLE "fruits"
+                ADD COLUMN "tropical" BOOLEAN DEFAULT false;
+
+                ALTER TABLE "fruits"
+                ADD COLUMN "price" INTEGER NOT NULL DEFAULT 0;
+
+            -- IF YOU ALREADY HAVE DATA IN TABLE, ADDING COLUMNS MIGHT CAUSE PROBLEMS
+
+        -- DELETE TABLE
+
+            -- EXAMPLE:
+                DROP TABLE IF EXISTS "fruits";
+
+Drawbacks to making databases manually:
+    -- SQL can't always be saved to git
+    -- it takes a long time
+    -- non-reversible
+    -- easy to make mistakes
+
+MIGRATIONS:
+Database Schema Migration:
+    -- better way to make databases
+    -- code written to a file that programmatically changes a database schema over time
+        -- can add new tables, columns, change data types, etc
+
+    -- the migration files build off of each other to build a final schema
+
+    -- migration library keeps track of which migration files have already been run
+
+    -- these files can be tracked with git
+
+knex comes with a migration helper
+    -- we need to configure knex before we can make migration files
+        -- we do that in knexfile.js (in root directory)
+
+MAKE A MIGRATION:
+    npx knex migrate:make migration_file_name
+
+RUN A MIGRATION:
+    npx knex migrate:latest
+        -- runs the migrations that have not run yet
+        -- if all migration files have run, will tell you "already up to date"
+
+UNDO A MIGRATION:
+    npm knex migrate:rollback
+        -- undoes the last migration batch (so it could be multiple migration files)
+        -- can be done multiple times to undo multiple migration batches
+
+migrations run in batchs
+    -- there can be multiple migrations in a batch
+    -- the migration files in a batch depend on which files have not been run yet
+        -- so, if you make 17 migration files but never run "npx knex migrate:latest" until the end, the batch will have 17 migration files in it
+        -- if you then ran "npx knex migrate:rollback", you would undo 17 migration files
+
+SEEDS: for sample data
+    -- they make sample data so that you don't have to sit there putting sample data in your database one by one
+
+MAKE A SEED FILE:
+    npx knex seed:make seed_file_name
+        -- go in there and fill in the data you want
+    
+RUN A SEED FILE:
+    npx knex seed:run
+        -- if you have a unique constraint, you can only run this command once (if you haven't changed the seed), unless you add code to the seed function so that it clears the table before seeding it
+
+THE CONCEPT OF MIGRATIONS AND SEEDS SPANS ACROSS LANGUAGES - IT'S NOT JUST JS AND SQL
